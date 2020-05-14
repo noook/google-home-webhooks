@@ -21,7 +21,7 @@ read what's inside it. In this example, I'm attaching the MAC address of my comp
 ## Usage
 
 Setup your environment variables either by exporting it in your shell or by creating a `.env` file.
-You need to fill in the `JWT_SECRET` variable.
+You need to fill in the `JWT_SECRET` and `SERVER_PORT` variables.
 
 You can build the command then run it with :
 ```sh

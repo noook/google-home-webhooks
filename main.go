@@ -28,6 +28,7 @@ var jwtSecret []byte
 func Generate(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
 	macAddress := args["mac"].Value
 
+	// One month expiracy
 	expirationTime := time.Now().Add(time.Minute * 60 * 24 * 30)
 	claims := &Claims{
 		Command: "WAKEUP",
@@ -55,7 +56,6 @@ func Server(args map[string]commando.ArgValue, flags map[string]commando.FlagVal
 			return
 		}
 
-		// Do something with the Person struct...
 		claims := jwt.MapClaims{}
 		data, err := jwt.ParseWithClaims(token.Token, claims, func(token *jwt.Token) (interface{}, error) {
 			return jwtSecret, nil
@@ -79,7 +79,7 @@ func Server(args map[string]commando.ArgValue, flags map[string]commando.FlagVal
 			fmt.Println(err)
 		}
 	})
-	http.ListenAndServe(":10100", nil)
+	http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("SERVER_PORT")), nil)
 }
 
 func main() {
