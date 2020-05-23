@@ -24,6 +24,7 @@ type TokenPayload struct {
 }
 
 var jwtSecret []byte
+var commandMapper map[string]func(name string, arg string)
 
 func Generate(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
 	macAddress := args["mac"].Value
@@ -66,25 +67,44 @@ func Server(args map[string]commando.ArgValue, flags map[string]commando.FlagVal
 			return
 		}
 
-		if claims, ok := data.Claims.(jwt.MapClaims); ok && data.Valid {
-			if str, ok := claims["command"].(string); ok && str == "WAKEUP" {
-				if str, ok := claims["arg"].(string); ok {
-					cmd := exec.Command("zsh", "-c", fmt.Sprintf("wakeonlan %s", str))
-					if err := cmd.Run(); err != nil {
-						fmt.Println(err)
-					}
-				}
-			}
-		} else {
-			fmt.Println(err)
+		claims, _ = data.Claims.(jwt.MapClaims)
+		arg, argOk := claims["arg"].(string)
+		commandName, commandOk := claims["command"].(string)
+
+		if !(argOk || commandOk) {
+			return
+		}
+
+		if command, ok := commandMapper[commandName]; ok {
+			command(commandName, arg)
 		}
 	})
 	http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("SERVER_PORT")), nil)
 }
 
+func WakeOnLan(command string, macAddress string) {
+	cmd := exec.Command("zsh", "-c", fmt.Sprintf("wakeonlan %s", macAddress))
+	fmt.Println(cmd)
+	if err := cmd.Run(); err != nil {
+		fmt.Println(err)
+	}
+}
+
+func DeployPortfolio(command string, arg string) {
+	cmd := exec.Command("zsh", "-c", ".scripts/deploy_nook_sh")
+	fmt.Println(cmd)
+	if err := cmd.Run(); err != nil {
+		fmt.Println(err)
+	}
+}
+
 func main() {
 	godotenv.Load()
 	jwtSecret = []byte(os.Getenv("JWT_SECRET"))
+	commandMapper = make(map[string]func(string, string))
+
+	commandMapper["WAKEUP"] = WakeOnLan
+	commandMapper["DEPLOY"] = DeployPortfolio
 
 	commando.
 		SetExecutableName("ifttt-wol").
