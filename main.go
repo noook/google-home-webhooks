@@ -27,13 +27,14 @@ var jwtSecret []byte
 var commandMapper map[string]func(name string, arg string)
 
 func Generate(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
-	macAddress := args["mac"].Value
+	cmd := args["identifier"].Value
+	argument := args["argument"].Value
 
 	// One month expiracy
 	expirationTime := time.Now().Add(time.Minute * 60 * 24 * 30)
 	claims := &Claims{
-		Command: "WAKEUP",
-		Arg:     macAddress,
+		Command: cmd,
+		Arg:     argument,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
@@ -90,8 +91,8 @@ func WakeOnLan(command string, macAddress string) {
 	}
 }
 
-func DeployPortfolio(command string, arg string) {
-	cmd := exec.Command("zsh", "-c", ".scripts/deploy_nook_sh")
+func DeployPortfolio(command string, pathToDeployScript string) {
+	cmd := exec.Command("zsh", "-c", pathToDeployScript)
 	fmt.Println(cmd)
 	if err := cmd.Run(); err != nil {
 		fmt.Println(err)
@@ -112,7 +113,8 @@ func main() {
 
 	commando.
 		Register("generate").
-		AddArgument("mac", "MAC address of the device it should wake up", "").
+		AddArgument("identifier", "Identifier of the command", "").
+		AddArgument("argument", "argument your would like to attach to the token", "").
 		SetDescription("Generates a JWT that will be accepted to use the WakeOnLAN utility").
 		SetShortDescription("Generates a JWT that will be accepted to use the WakeOnLAN utility").
 		SetAction(Generate)
