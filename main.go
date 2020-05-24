@@ -94,7 +94,7 @@ func WakeOnLan(command string, macAddress string) {
 func DeployPortfolio(command string, pathToDeployScript string) {
 	cmd := exec.Command("zsh", "-c", pathToDeployScript)
 	fmt.Println(cmd)
-	if err := cmd.Run(); err != nil {
+	if err := cmd.Start(); err != nil {
 		fmt.Println(err)
 	}
 }

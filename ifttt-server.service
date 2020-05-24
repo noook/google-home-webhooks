@@ -1,0 +1,23 @@
+[Unit]  
+Description=IFTTT webhook server service
+After=network.target
+
+[Service]      
+ExecStart=/usr/local/go/bin/go run main.go server
+WorkingDirectory=/home/pi/go/src/google-home-webhooks
+
+User=pi
+Group=pi
+
+Restart=always    
+RestartSec=10    
+KillSignal=SIGINT
+
+SyslogIdentifier=ifttt-server
+PrivateTmp=true  
+
+Environment=JWT_SECRET=nicelmao
+Environment=SERVER_PORT=13000
+
+[Install]      
+WantedBy=multi-user.target
